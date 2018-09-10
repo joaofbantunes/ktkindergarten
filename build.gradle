@@ -17,7 +17,7 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 apply plugin: 'application'
 
-mainClassName = 'ktkindergarten.Server'
+mainClassName = 'ktkindergarten.ServerKt'
 
 kotlin { experimental { coroutines "enable" } }
 
@@ -28,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile "io.ktor:ktor-server-netty:$ktor_version"
     compile "io.ktor:ktor-jackson:$ktor_version"
     compile "ch.qos.logback:logback-classic:1.3.0-alpha4"

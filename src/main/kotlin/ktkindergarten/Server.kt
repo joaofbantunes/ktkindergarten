@@ -1,5 +1,3 @@
-@file:JvmName("Server")
-
 package ktkindergarten
 
 import io.ktor.application.*

@@ -1,29 +1,25 @@
 package ktkindergarten
 
-import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
+import io.ktor.routing.routing
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import ktkindergarten.routes.status
+import ktkindergarten.routes.things
 
 fun main(args: Array<String>) {
-    var requests = 0
+
     println("Starting server...")
+
     embeddedServer(Netty, 8080) {
         install(ContentNegotiation) {
             jackson {}
         }
         routing {
-            get("/") {
-                val requestNumber = ++requests
-                call.respond(SomeResponse(
-                        requestNumber,
-                        if (requestNumber == 1) "Hellooooooooooooooo!" else "Hello again - ${requestNumber} requests!"))
-            }
+            status()
+            things()
         }
     }.start(wait = true)
 }
-
-data class SomeResponse(val requestNumber: Int, val greeting: String)

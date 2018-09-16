@@ -8,27 +8,27 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
+import ktkindergarten.mappings.*
+import ktkindergarten.services.ThingsService
 
-var thingsId = 0
-var anotherThingsId = 0
-val things = mutableListOf<Something>()
+private val thingsService = ThingsService()
 
 fun Route.things() {
     route("/somethings"){
         get {
-            call.respond(things)
+            call.respond(thingsService.getThings().toThingsModel())
         }
         post {
             val thing = call.receive<Something>()
-            things += Something(thingsId++, thing.description)
-            call.respond(things.last())
+            val addedThing = thingsService.addThing(thing.toService())
+            call.respond(addedThing.toModel())
         }
         route("{thingId}") {
             get {
                 val thingId = call.parameters["thingId"]?.toInt()
-                val thing = if(thingId != null) things.find { t -> t.id == thingId } else null
+                val thing = if(thingId != null) thingsService.getThingById(thingId) else null
                 if(thing != null) {
-                    call.respond(thing)
+                    call.respond(thing.toModel())
                 } else {
                     call.respond(HttpStatusCode.NotFound)
                 }
@@ -36,9 +36,9 @@ fun Route.things() {
             route("/innerthings"){
                 get {
                     val thingId = call.parameters["thingId"]?.toInt()
-                    val thing = if(thingId != null) things.find { t -> t.id == thingId } else null
-                    if(thing != null) {
-                        call.respond(thing.innerThings)
+                    val innerThings = if(thingId != null) thingsService.getInnerThings(thingId) else emptyList()
+                    if(innerThings != null) {
+                        call.respond(innerThings.toAnotherThingsModel())
                     } else {
                         call.respond(HttpStatusCode.NotFound)
                     }
@@ -46,10 +46,9 @@ fun Route.things() {
                 post {
                     val anotherThing = call.receive<AnotherThing>()
                     val thingId = call.parameters["thingId"]?.toInt()
-                    val thing = if(thingId != null) things.find { t -> t.id == thingId } else null
-                    if(thing != null) {
-                        thing.innerThings += AnotherThing(anotherThingsId++, anotherThing.description)
-                        call.respond(thing.innerThings.last())
+                    val addedAnotherThing = if(thingId != null) thingsService.addAnotherThing(thingId, anotherThing.toService()) else null
+                    if(addedAnotherThing != null) {
+                        call.respond(addedAnotherThing.toModel())
                     } else {
                         call.respond(HttpStatusCode.NotFound)
                     }
@@ -59,6 +58,6 @@ fun Route.things() {
     }
 }
 
-data class Something(val id: Int, val description: String, val innerThings: MutableList<AnotherThing> = mutableListOf())
+data class Something(val id: Int, val description: String, val innerThings: Iterable<AnotherThing> = emptyList())
 
 data class AnotherThing(val id: Int, val description: String)
